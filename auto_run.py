@@ -1,6 +1,8 @@
 
 import subprocess
 
+subprocess.run(['mkdir', 'metrics'])
+
 models = ['BASEBERT', 'DISTILBERT', 'ROBERTA', 'ALBERT', 'GPT2']
 rates = ['0.00001',  '0.0001', '0.001', '0.01', '0.1', '1']
 
@@ -9,4 +11,4 @@ rates = ['0.00001',  '0.0001', '0.001', '0.01', '0.1', '1']
 
 for i in models:
     for j in rates:
-        subprocess.run(['python3', 'experiment.py', i, j])
+        subprocess.run(['nohup', 'python3', 'experiment.py', i, j])

@@ -57,7 +57,7 @@ class Classifier:
     ALBERT = 'albert-base-v2'
 
     # some default parameter values
-    EPOCHS = 2
+    EPOCHS = 1
     BATCH_SIZE = 100
 
     def __init__(self):
