@@ -1,0 +1,7 @@
+tensorflow
+pandas
+numpy==1.19.5
+transformers
+tensorflow_addons
+pydot
+scikit-learn
