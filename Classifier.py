@@ -6,6 +6,7 @@ from tensorflow.keras.callbacks import Callback, EarlyStopping
 import tensorflow_addons as tfa
 
 from DataGenerator import *
+from Metrics import *
 
 mf = ""
 
@@ -25,7 +26,9 @@ class WriteMetrics(Callback):
         vals = list(logs.values())
         print('GLOBAL TEST:', mf)
         with open(mf, 'a') as file:
-            file.write("{},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(epoch+1, vals[0], vals[1], vals[2], vals[3]))
+            file.write("{},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(epoch+1, vals[0], vals[1], vals[2]
+                                                                                      , vals[3], vals[4], vals[5],
+                                                                                      vals[6], vals[7]))
 
 
 class Classifier:
@@ -120,24 +123,24 @@ class Classifier:
 from keras import backend as K
 
 
-def recall_m(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-    recall = true_positives / (possible_positives + K.epsilon())
-    return recall
-
-
-def precision_m(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-    precision = true_positives / (predicted_positives + K.epsilon())
-    return precision
-
-
-def f1_m(y_true, y_pred):
-    precision = precision_m(y_true, y_pred)
-    recall = recall_m(y_true, y_pred)
-    return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
+# def recall_m(y_true, y_pred):
+#     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+#     possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+#     recall = true_positives / (possible_positives + K.epsilon())
+#     return recall
+#
+#
+# def precision_m(y_true, y_pred):
+#     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+#     predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+#     precision = true_positives / (predicted_positives + K.epsilon())
+#     return precision
+#
+#
+# def f1_m(y_true, y_pred):
+#     precision = precision_m(y_true, y_pred)
+#     recall = recall_m(y_true, y_pred)
+#     return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
 
 
 class Binary_Text_Classifier(Classifier):
@@ -307,8 +310,14 @@ class MultiLabel_Text_Classifier(Classifier):
         optimizer = tf.keras.optimizers.Adam(learning_rate=self.rate)
         self.model.compile(
             optimizer=optimizer,
-            loss='categorical_crossentropy',
-            metrics=['accuracy', tfa.metrics.F1Score(num_classes, average='micro', name='micro_f1'),
-                     tfa.metrics.F1Score(num_classes, average='macro', name='macro_f1')]
+            loss='categorical_crossentropy', # change to binary?
+            metrics=[macro_cPrecision, macro_cRecall, macro_cF1,
+                     micro_cPrecision, micro_cRecall, micro_cF1,
+                     recall_c0, precision_c0, f1_c0,
+                     recall_c1, precision_c1, f1_c1,
+                     recall_c2, precision_c2, f1_c2,
+                     recall_c3, precision_c3, f1_c3,
+                     recall_c4, precision_c4, f1_c4
+             ]
             # TODO - what metrics to report for multilabel? macro/micro F1, etc..?
         )

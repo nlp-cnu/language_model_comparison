@@ -33,6 +33,7 @@ if __name__ == '__main__':
     print('model chosen:', mn)
     lr = float(cmdargs[2])
     print('learning rate:', lr)
+    back_prop = cmdargs[3]
     #hard-coded variables
     language_model_name = ""
     if mn == 'BASEBERT':
@@ -48,10 +49,13 @@ if __name__ == '__main__':
     data_filepath = '../text_classification_dataset.tsv'
     seed = 2005
 
-    metric_file = "metrics/{}_{}_metrics.txt".format(mn, lr)
+    if back_prop:
+        metric_file = "metrics/{}_{}_{}_metrics.txt".format(mn, lr, "BP")
+    else:
+        metric_file = "metrics/{}_{}_{}_metrics.txt".format(mn, lr, "noBP")
     print('writing metrics to:', metric_file)
     with open(metric_file, 'w') as file:
-        file.write('epoch,loss,accuracy,micro_f1,macro_f1\n')
+        file.write('epoch,loss,macro_precision,macro_recall,macro_f1,micro_precision,micro_recall,micro_f1\n')
 
     #create classifier and load data for a binary text classifier
     #classifier = Binary_Text_Classifier(language_model_name)
@@ -59,7 +63,8 @@ if __name__ == '__main__':
 
     #create classifier and load data for a multiclass text classifier
     num_classes = 2
-    classifier = MultiLabel_Text_Classifier(language_model_name, num_classes, rate=lr, metric_file=metric_file)
+    classifier = MultiLabel_Text_Classifier(language_model_name, num_classes, rate=lr, metric_file=metric_file,
+                                            language_model_trainable=back_prop)
     data = MultiClass_Text_Classification_Dataset(data_filepath)
     
     #get the training data
