@@ -60,8 +60,8 @@ class Classifier:
     ALBERT = 'albert-base-v2'
 
     # some default parameter values
-    EPOCHS = 1
-    BATCH_SIZE = 100
+    EPOCHS = 50
+    BATCH_SIZE = 20
 
     def __init__(self):
         '''
@@ -100,7 +100,7 @@ class Classifier:
             epochs=epochs,
             validation_data=validation_data,
             verbose=2,
-            callbacks=[WriteMetrics()]
+            callbacks=[WriteMetrics(), EarlyStopping(monitor='loss', patience=5)]
         )
 
     # function to predict using the NN

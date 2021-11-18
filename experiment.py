@@ -66,12 +66,9 @@ if __name__ == '__main__':
     classifier = MultiLabel_Text_Classifier(language_model_name, num_classes, rate=lr, metric_file=metric_file,
                                             language_model_trainable=back_prop)
     data = MultiClass_Text_Classification_Dataset(data_filepath)
-    
-    #get the training data
-    train_x, train_y = data.get_train_data()
 
-    #get test data
-    test_x, test_y = data.get_test_data()
+    train_x, train_y = data.get_train_data()
+    val_x, val_y = data.get_validation_data()
 
     ###### BONUS STUFF ########
     #summarize the model in text
@@ -92,7 +89,7 @@ if __name__ == '__main__':
     classifier.train(train_x,train_y)
 
     #predict with the model
-    predictions = classifier.test(test_x)
+    predictions = classifier.test(train_x, train_y, validation_data=(val_x, val_y),)
 
     #TODO - compute test statistics ---- or output the predictions to file or something
 
