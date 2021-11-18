@@ -8,34 +8,33 @@ import tensorflow_addons as tfa
 from DataGenerator import *
 from Metrics import *
 
+# metric file string location
 mf = ""
 
 
 class WriteMetrics(Callback):
-    global mf
-
-    def on_train_begin(self, logs=None):
-        keys = list(logs.keys())
-        print("At start; log keys: ".format(keys))
-        print('GLOBAL FILE TEST:', mf)
+    """
+    Callback method to write metrics.
+    """
+    def __init__(self, metric_file=None):
+        self.metric_file = metric_file
 
     def on_epoch_end(self, epoch, logs=None):
         keys = list(logs.keys())
         print("End of epoch {}; log keys;: {}".format(epoch+1, keys))
         print(list(logs.values()))
         vals = list(logs.values())
-        print('GLOBAL TEST:', mf)
-        with open(mf, 'a') as file:
+        with open(self.metric_file, 'a') as file:
             file.write("{},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(epoch+1, vals[0], vals[1], vals[2]
                                                                                       , vals[3], vals[4], vals[5],
                                                                                       vals[6], vals[7]))
 
 
 class Classifier:
-    '''
+    """
     Classifier class, which holds a language model and a classifier
     This class can be modified to create whatever architecture you want,
-    however it requres the following instance variables:
+    however it requires the following instance variables:
     self.language_mode_name - this is a passed in variable and it specifies
        which HuggingFace language model to use
     self.tokenizer - this is created, but is just an instance of the tokenizer
@@ -47,11 +46,11 @@ class Classifier:
     the model will then be saved and can be used for prediction.
 
     Training uses a DataGenerator object, which inherits from a sequence object
-    The DataGenerator ensures that data is correctly divided into batches. 
-    This could be done manually, but the DataGenerator ensures it is done 
+    The DataGenerator ensures that data is correctly divided into batches.
+    This could be done manually, but the DataGenerator ensures it is done
     correctly, and also allows for variable length batches, which massively
     increases the speed of training.
-    '''
+    """
     # These are some of the HuggingFace Models which you can use
     BASEBERT = 'bert-base-uncased'
     DISTILBERT = 'distilbert-base-uncased'
@@ -64,28 +63,28 @@ class Classifier:
     BATCH_SIZE = 20
 
     def __init__(self):
-        '''
+        """
         Initializer for a language model. This class should be extended, and
         the model should be built in the constructor. This constructor does
         nothing, since it is an abstract class. In the constructor however
         you must define:
-        self.tokenizer 
+        self.tokenizer
         self.model
-        '''
+        """
         self.tokenizer = None
         self.model = None
+        self.metric_file = None
 
     def train(self, x, y, batch_size=BATCH_SIZE, validation_data=None, epochs=EPOCHS):
-        '''
+        """
         Trains the classifier
         :param x: the training data
         :param y: the training labels
-
         :param batch_size: the batch size
-        :param: validation_data: a tuple containing x and y for a validation dataset
-                so, validation_data[0] = val_x and validation_data[1] = val_y
-        :param: epochs: the number of epochs to train for
-        '''
+        :param validation_data: a tuple containing x and y for a validation dataset so, validation_data[0] = val_x and
+        validation_data[1] = val_y
+        :param epochs: the number of epochs to train for
+        """
 
         # create a DataGenerator from the training data
         training_data = DataGenerator(x, y, batch_size, self.tokenizer)
@@ -100,7 +99,8 @@ class Classifier:
             epochs=epochs,
             validation_data=validation_data,
             verbose=2,
-            callbacks=[WriteMetrics(), EarlyStopping(monitor='loss', patience=5)]
+            callbacks=[WriteMetrics(self.metric_file), EarlyStopping(monitor='loss', mindelta=0.0001, patience=5, mode='min',
+                                                     restore_best_weights=True)]
         )
 
     # function to predict using the NN
@@ -108,6 +108,7 @@ class Classifier:
         """
         Predicts labels for data
         :param x: data
+        :param batch_size: size of batch, constant defined earlier
         :return: predictions
         """
         if not isinstance(x, tf.keras.utils.Sequence):
@@ -190,18 +191,18 @@ class Binary_Text_Classifier(Classifier):
         # now, create some deep layers
         # deep 1
         dense1 = tf.keras.layers.Dense(256, activation='gelu')
-        dropout1 = tf.keras.layers.Dropout(.2)
+        dropout1 = tf.keras.layers.Dropout(.8)
         output1 = dropout1(dense1(sentence_representation_biLSTM))
         # output1 = dropout1(dense1(sentence_representation_language_model))
 
         # deep 2
         dense2 = tf.keras.layers.Dense(128, activation='gelu')
-        dropout2 = tf.keras.layers.Dropout(.2)
+        dropout2 = tf.keras.layers.Dropout(.8)
         output2 = dropout2(dense2(output1))
 
         # deep 3
         dense3 = tf.keras.layers.Dense(64, activation='gelu')
-        dropout3 = tf.keras.layers.Dropout(.2)
+        dropout3 = tf.keras.layers.Dropout(.8)
         output3 = dropout3(dense3(output2))
 
         # softmax
@@ -236,10 +237,6 @@ class MultiLabel_Text_Classifier(Classifier):
         self.num_classes = num_classes
         self.rate = rate
         self.metric_file = metric_file
-
-        # set global variables for name and rate for file writing purposes
-        global mf
-        mf = metric_file
 
         # create the tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(language_model_name)
@@ -286,17 +283,17 @@ class MultiLabel_Text_Classifier(Classifier):
         # now, create some deep layers
         # deep 1
         dense1 = tf.keras.layers.Dense(256, activation='gelu')
-        dropout1 = tf.keras.layers.Dropout(.2)
+        dropout1 = tf.keras.layers.Dropout(.8)
         output1 = dropout1(dense1(sentence_representation_biLSTM))
 
         # deep 2
         dense2 = tf.keras.layers.Dense(128, activation='gelu')
-        dropout2 = tf.keras.layers.Dropout(.2)
+        dropout2 = tf.keras.layers.Dropout(.8)
         output2 = dropout2(dense2(output1))
 
         # deep 3
         dense3 = tf.keras.layers.Dense(64, activation='gelu')
-        dropout3 = tf.keras.layers.Dropout(.2)
+        dropout3 = tf.keras.layers.Dropout(.8)
         output3 = dropout3(dense3(output2))
 
         # softmax
