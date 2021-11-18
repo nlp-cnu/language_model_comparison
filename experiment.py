@@ -49,7 +49,7 @@ if __name__ == '__main__':
     data_filepath = '../text_classification_dataset.tsv'
     seed = 2005
 
-    if back_prop:
+    if back_prop == 'True':
         metric_file = "metrics/{}_{}_{}_metrics.txt".format(mn, lr, "BP")
     else:
         metric_file = "metrics/{}_{}_{}_metrics.txt".format(mn, lr, "noBP")
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     num_classes = 2
     classifier = MultiLabel_Text_Classifier(language_model_name, num_classes, rate=lr, metric_file=metric_file,
                                             language_model_trainable=back_prop)
-    data = MultiClass_Text_Classification_Dataset(data_filepath)
+    data = MultiClass_Text_Classification_Dataset(data_filepath, validation_set_size=0.2)
 
     train_x, train_y = data.get_train_data()
     val_x, val_y = data.get_validation_data()
