@@ -219,7 +219,7 @@ class MultiLabel_Text_Classifier(Classifier):
 
         # create the tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(language_model_name)
-        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
 
         # create the language model
         model_name = self.language_model_name
