@@ -4,30 +4,36 @@ from tensorflow.keras.layers import *
 from tensorflow.keras import Model
 from tensorflow.keras.callbacks import Callback, EarlyStopping
 import tensorflow_addons as tfa
+import time
 
 from DataGenerator import *
 from Metrics import *
-
-# metric file string location
-mf = ""
 
 
 class WriteMetrics(Callback):
     """
     Callback method to write metrics.
+    Writes epoch, loss, macro_cPrecision, macro_cRecall, macro_cF1, micro_cPrecision, micro_cRecall, micro_cF1, time(s)
     """
+
     def __init__(self, metric_file=None):
         self.metric_file = metric_file
+        self.start = 0
+
+    def on_epoch_start(self, epoch, logs=None):
+        self.start = time.time()
 
     def on_epoch_end(self, epoch, logs=None):
+        time_taken = time.time() - self.start
         keys = list(logs.keys())
-        print("End of epoch {}; log keys;: {}".format(epoch+1, keys))
+        print("End of epoch {}; log keys;: {}".format(epoch + 1, keys))
         print(list(logs.values()))
         vals = list(logs.values())
         with open(self.metric_file, 'a') as file:
-            file.write("{},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(epoch+1, vals[0], vals[1], vals[2]
-                                                                                      , vals[3], vals[4], vals[5],
-                                                                                      vals[6], vals[7]))
+            file.write(
+                "{},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(epoch + 1, vals[0], vals[1], vals[2]
+                                                                               , vals[3], vals[4], vals[5],
+                                                                               vals[6], vals[7], time_taken))
 
 
 class Classifier:
@@ -99,8 +105,8 @@ class Classifier:
             epochs=epochs,
             validation_data=validation_data,
             verbose=2,
-            callbacks=[WriteMetrics(self.metric_file), EarlyStopping(monitor='loss', min_delta=0.0001, patience=5, mode='min',
-                                                     restore_best_weights=True)]
+            callbacks=[WriteMetrics(self.metric_file), EarlyStopping(monitor='loss', min_delta=0.0001, patience=5,
+                                                                     mode='min', restore_best_weights=True)]
         )
 
     # function to predict using the NN
@@ -119,31 +125,7 @@ class Classifier:
         return self.model.predict(x, batch_size=batch_size)
 
 
-# Example of how to write custom metrics. This is precision, recall, and f1 scores
-# TODO - got these from online (https://datascience.stackexchange.com/questions/45165/how-to-get-accuracy-f1-precision-and-recall-for-a-keras-model), do they work for multi-class problems too?
-from keras import backend as K
-
-
-# def recall_m(y_true, y_pred):
-#     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-#     possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-#     recall = true_positives / (possible_positives + K.epsilon())
-#     return recall
-#
-#
-# def precision_m(y_true, y_pred):
-#     true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-#     predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-#     precision = true_positives / (predicted_positives + K.epsilon())
-#     return precision
-#
-#
-# def f1_m(y_true, y_pred):
-#     precision = precision_m(y_true, y_pred)
-#     recall = recall_m(y_true, y_pred)
-#     return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
-
-
+# NEEDS TO BE UPDATED - ONLY MULTI WORKS RIGHT NOW
 class Binary_Text_Classifier(Classifier):
     def __init__(self, language_model_name, language_model_trainable=False):
         Classifier.__init__(self)
@@ -219,19 +201,16 @@ class Binary_Text_Classifier(Classifier):
             loss='binary_crossentropy',
             metrics=['accuracy', tf.keras.metrics.Precision(), precision_m, tf.keras.metrics.Recall(), recall_m,
                      tfa.metrics.F1Score(1), f1_m]  # TODO - get F1 working
-            # metrics=['accuracy', tfa.metrics.F1Score(2)] #TODO -add precision and recall
         )
 
 
 class MultiLabel_Text_Classifier(Classifier):
     def __init__(self, language_model_name, num_classes, rate, metric_file, language_model_trainable=False):
-        '''
+        """
         This is identical to the Binary_Text_Classifier, except the last layer uses
         a softmax, loss is Categorical Cross Entropy and its output dimension is num_classes
         Also, different metrics are reported.
-        You also need to make sure that the class input is the correct dimensionality by
-        using Dataset TODO --- need to write a new class?
-        '''
+        """
         Classifier.__init__(self)
         self.language_model_name = language_model_name
         self.num_classes = num_classes
@@ -307,7 +286,7 @@ class MultiLabel_Text_Classifier(Classifier):
         optimizer = tf.keras.optimizers.Adam(learning_rate=self.rate)
         self.model.compile(
             optimizer=optimizer,
-            loss='categorical_crossentropy', # change to binary?
+            loss='categorical_crossentropy',
             metrics=[macro_cPrecision, macro_cRecall, macro_cF1,
                      micro_cPrecision, micro_cRecall, micro_cF1,
                      recall_c0, precision_c0, f1_c0,
@@ -315,6 +294,5 @@ class MultiLabel_Text_Classifier(Classifier):
                      recall_c2, precision_c2, f1_c2,
                      recall_c3, precision_c3, f1_c3,
                      recall_c4, precision_c4, f1_c4
-             ]
-            # TODO - what metrics to report for multilabel? macro/micro F1, etc..?
+                     ]
         )

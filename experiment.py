@@ -55,7 +55,7 @@ if __name__ == '__main__':
         metric_file = "metrics/{}_{}_{}_metrics.txt".format(mn, lr, "noBP")
     print('writing metrics to:', metric_file)
     with open(metric_file, 'w') as file:
-        file.write('epoch,loss,macro_precision,macro_recall,macro_f1,micro_precision,micro_recall,micro_f1\n')
+        file.write('epoch,loss,macro_precision,macro_recall,macro_f1,micro_precision,micro_recall,micro_f1,time(s)\n')
 
     #create classifier and load data for a binary text classifier
     #classifier = Binary_Text_Classifier(language_model_name)
