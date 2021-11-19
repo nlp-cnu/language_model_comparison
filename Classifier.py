@@ -24,14 +24,14 @@ class WriteMetrics(Callback):
         self.start = time.time()
 
     def on_epoch_end(self, epoch, logs=None):
-        time_taken = time.time() - self.start
+        time_taken = int(time.time() - self.start)
         keys = list(logs.keys())
         print("End of epoch {}; log keys;: {}".format(epoch + 1, keys))
         print(list(logs.values()))
         vals = list(logs.values())
         with open(self.metric_file, 'a') as file:
             file.write(
-                "{},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}\n".format(epoch + 1, vals[0], vals[1], vals[2]
+                "{},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{}\n".format(epoch + 1, vals[0], vals[1], vals[2]
                                                                                , vals[3], vals[4], vals[5],
                                                                                vals[6], vals[7], time_taken))
 
