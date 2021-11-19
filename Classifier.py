@@ -24,7 +24,7 @@ class WriteMetrics(Callback):
         self.start = time.time()
 
     def on_epoch_end(self, epoch, logs=None):
-        time_taken = int(time.time() - self.start)
+        time_taken = int((time.time() - self.start) * 60)
         keys = list(logs.keys())
         print("End of epoch {}; log keys;: {}".format(epoch + 1, keys))
         print(list(logs.values()))
@@ -219,6 +219,7 @@ class MultiLabel_Text_Classifier(Classifier):
 
         # create the tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(language_model_name)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
 
         # create the language model
         model_name = self.language_model_name
