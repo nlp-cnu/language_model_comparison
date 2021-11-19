@@ -46,7 +46,7 @@ if __name__ == '__main__':
         language_model_name = Classifier.GPT2
     elif mn == 'ALBERT':
         language_model_name = Classifier.ALBERT
-    data_filepath = '../text_classification_dataset.tsv'
+    data_filepath = "../text_classification_dataset.tsv"
     seed = 2005
 
     if back_prop == 'True':

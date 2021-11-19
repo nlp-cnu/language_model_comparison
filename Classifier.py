@@ -99,7 +99,7 @@ class Classifier:
             epochs=epochs,
             validation_data=validation_data,
             verbose=2,
-            callbacks=[WriteMetrics(self.metric_file), EarlyStopping(monitor='loss', mindelta=0.0001, patience=5, mode='min',
+            callbacks=[WriteMetrics(self.metric_file), EarlyStopping(monitor='loss', min_delta=0.0001, patience=5, mode='min',
                                                      restore_best_weights=True)]
         )
 
